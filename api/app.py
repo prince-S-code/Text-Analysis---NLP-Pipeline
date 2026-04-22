@@ -6,7 +6,7 @@ from config import UPLOAD_FOLDER, ALLOWED_EXTENSIONS
 from src.pipeline import run_pipeline
 from src.database import init_db, save_analysis, get_all_records
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 init_db()
@@ -36,6 +36,8 @@ def index():
 
     history = get_all_records()
     return render_template('index.html', results=results, history=history)
+
+application = app
 
 if __name__ == "__main__":
     app.run(debug=True)
