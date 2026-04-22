@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLP Text Analyzer | AI-Powered Pipeline</title>
+  <meta name="description" content="Upload any text file and get instant NLP insights: sentiment, keywords, named entities, summary, and a word cloud." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #09090f;
+      --surface:  #111118;
+      --card:     #16161f;
+      --border:   rgba(255,255,255,0.07);
+      --accent1:  #7c3aed;
+      --accent2:  #06b6d4;
+      --accent3:  #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --radius:   16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+
+    /* ── HERO HEADER ── */
+    .hero {
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 50%, #0a1628 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 24px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(124,58,237,0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.4);
+      color: #a78bfa;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+      padding: 4px 14px; border-radius: 999px; margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, #a78bfa 70%, #67e8f9 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15; margin-bottom: 14px;
+    }
+    .hero p {
+      color: var(--muted); font-size: 1rem; max-width: 520px; margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main { max-width: 720px; margin: 0 auto; padding: 40px 20px 0; }
+
+    /* ── UPLOAD CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+    }
+    .card-title span { font-size: 16px; }
+
+    /* Upload zone */
+    .drop-zone {
+      border: 2px dashed rgba(124,58,237,0.4);
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(124,58,237,0.04);
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.active {
+      border-color: var(--accent1);
+      background: rgba(124,58,237,0.1);
+      transform: translateY(-2px);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon {
+      font-size: 42px; margin-bottom: 12px; display: block;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    .drop-zone h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .drop-zone p  { font-size: 13px; color: var(--muted); }
+    .file-name {
+      margin-top: 14px; font-size: 13px; color: #a78bfa;
+      font-weight: 500; display: none;
+    }
+
+    /* Analyze button */
+    .btn-analyze {
+      width: 100%; margin-top: 20px;
+      padding: 15px;
+      border: none; border-radius: 12px; cursor: pointer;
+      font-size: 15px; font-weight: 700; letter-spacing: 0.02em;
+      background: linear-gradient(135deg, var(--accent1) 0%, #9333ea 50%, #6d28d9 100%);
+      color: #fff;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.45);
+    }
+    .btn-analyze:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(124,58,237,0.6);
+    }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-analyze::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+    .btn-analyze:hover::after { transform: translateX(100%); }
+
+    /* ── RESULTS ── */
+    .results-header {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 20px; font-weight: 700; margin-bottom: 24px;
+    }
+    .results-header .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(1.4); }
+    }
+
+    /* Stat row */
+    .stat-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .stat-box .val {
+      font-size: 26px; font-weight: 800; margin-bottom: 4px;
+    }
+    .stat-box .lbl { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* Sentiment colours */
+    .sent-positive .val { color: #22c55e; }
+    .sent-negative .val { color: #ef4444; }
+    .sent-neutral  .val { color: #f59e0b; }
+
+    /* Section label */
+    .section-lbl {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Summary */
+    .summary-text {
+      font-size: 14px; line-height: 1.8; color: #cbd5e1;
+      background: rgba(6,182,212,0.05);
+      border-left: 3px solid var(--accent2);
+      padding: 14px 16px; border-radius: 0 10px 10px 0;
+    }
+
+    /* Keywords */
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      color: #c4b5fd; font-size: 13px; font-weight: 500;
+      padding: 5px 12px; border-radius: 999px;
+      transition: background 0.2s;
+    }
+    .tag:hover { background: rgba(124,58,237,0.25); }
+
+    /* Entities */
+    .entity-list { display: flex; flex-direction: column; gap: 8px; }
+    .entity-item {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .entity-item .ent-text { font-size: 14px; font-weight: 500; }
+    .entity-badge {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      padding: 3px 10px; border-radius: 999px;
+    }
+    .ent-PERSON  { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+    .ent-ORG     { background: rgba(6,182,212,0.15);  color: #67e8f9; }
+    .ent-GPE     { background: rgba(34,197,94,0.15);  color: #86efac; }
+    .ent-DATE    { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .ent-DEFAULT { background: rgba(124,58,237,0.15); color: #c4b5fd; }
+
+    /* Tokens */
+    .token-scroll {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      max-height: 140px; overflow-y: auto;
+      padding: 4px 0;
+    }
+    .token-scroll::-webkit-scrollbar { width: 4px; }
+    .token-scroll::-webkit-scrollbar-track { background: transparent; }
+    .token-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    .tok {
+      font-size: 12px; color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 6px;
+    }
+
+    /* Wordcloud */
+    .wc-img {
+      width: 100%; border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    /* History */
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 13px;
+    }
+    .history-item .fname { font-weight: 600; color: var(--text); }
+    .history-item .meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .hist-sent {
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+    }
+    .hist-Positive { background: rgba(34,197,94,0.15); color: #86efac; }
+    .hist-Negative { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .hist-Neutral  { background: rgba(245,158,11,0.15); color: #fcd34d; }
+
+    /* Fade-in animation */
+    .fade-in { animation: fadeUp 0.5s ease both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.10s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.20s; }
+    .delay-5 { animation-delay: 0.25s; }
+    .delay-6 { animation-delay: 0.30s; }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-badge">⚡ AI-Powered</div>
+  <h1>NLP Text Analyzer</h1>
+  <p>Upload a <strong>.txt</strong> file and instantly get sentiment, keywords, entities, a summary, and a word cloud — powered by an end-to-end NLP pipeline.</p>
+</header>
+
+<main class="main">
+
+  <!-- ── UPLOAD FORM ── -->
+  <div class="card fade-in">
+    <div class="card-title"><span>📂</span> Upload Document</div>
+    <form method="POST" enctype="multipart/form-data" id="nlpForm">
+      <label class="drop-zone" id="dropZone">
+        <span class="drop-icon">📄</span>
+        <h3>Drop your file here</h3>
+        <p>or click to browse — <strong>.txt</strong> files only</p>
+        <div class="file-name" id="fileName"></div>
+        <input type="file" name="file" id="fileInput" accept=".txt" />
+      </label>
+      <button type="submit" class="btn-analyze" id="analyzeBtn">
+        🚀 &nbsp;Run Analysis
+      </button>
+    </form>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  {% if results %}
+  <div class="results-header fade-in">
+    <div class="dot"></div> Analysis Complete
+  </div>
+
+  <!-- Sentiment stat boxes -->
+  {% set sent = results.sentiment %}
+  <div class="stat-row fade-in delay-1">
+    <div class="stat-box sent-{{ sent.label }}">
+      <div class="val">
+        {% if sent.label == 'Positive' %}😊
+        {% elif sent.label == 'Negative' %}😞
+        {% else %}😐{% endif %}
+      </div>
+      <div class="lbl">Sentiment</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" style="color:#a78bfa;">{{ "%.0f"|format(sent.score * 100) }}%</div>
+      <div class="lbl">Confidence</div>
+    </div>
+    <div class="stat-box">
+      <div class="val" style="color:#67e8f9;">{{ results.tokens|length }}</div>
+      <div class="lbl">Tokens</div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card fade-in delay-2">
+    <div class="section-lbl">📝 Summary</div>
+    <div class="summary-text">{{ results.summary }}</div>
+  </div>
+
+  <!-- Keywords -->
+  <div class="card fade-in delay-3">
+    <div class="section-lbl">🔑 Keywords</div>
+    <div class="tag-cloud">
+      {% for kw in results.keywords %}
+        <span class="tag"># {{ kw }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Named Entities -->
+  {% if results.entities %}
+  <div class="card fade-in delay-4">
+    <div class="section-lbl">🏷️ Named Entities</div>
+    <div class="entity-list">
+      {% for ent in results.entities %}
+      <div class="entity-item">
+        <span class="ent-text">{{ ent[0] }}</span>
+        <span class="entity-badge ent-{{ ent[1] if ent[1] in ['PERSON','ORG','GPE','DATE'] else 'DEFAULT' }}">{{ ent[1] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Word Cloud -->
+  <div class="card fade-in delay-5">
+    <div class="section-lbl">☁️ Word Cloud</div>
+    <img class="wc-img" src="{{ url_for('static', filename='wordcloud.png') }}" alt="Word Cloud" />
+  </div>
+
+  <!-- Tokens -->
+  <div class="card fade-in delay-6">
+    <div class="section-lbl">🔢 Processed Tokens</div>
+    <div class="token-scroll">
+      {% for tok in results.tokens %}
+        <span class="tok">{{ tok }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── HISTORY ── -->
+  {% if history %}
+  <div class="card fade-in">
+    <div class="card-title"><span>🕑</span> Analysis History</div>
+    <div class="history-list">
+      {% for row in history %}
+      <div class="history-item">
+        <div>
+          <div class="fname">{{ row.filename }}</div>
+          <div class="meta">Record #{{ row.id }}</div>
+        </div>
+        <span class="hist-sent" style="background:rgba(124,58,237,0.15);color:#c4b5fd;">Analyzed</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</main>
+
+<script>
+  const input    = document.getElementById('fileInput');
+  const dropZone = document.getElementById('dropZone');
+  const fileName = document.getElementById('fileName');
+  const btn      = document.getElementById('analyzeBtn');
+
+  input.addEventListener('change', () => {
+    if (input.files.length) {
+      fileName.textContent = '✅ ' + input.files[0].name;
+      fileName.style.display = 'block';
+      btn.textContent = '🚀  Analyze: ' + input.files[0].name;
+    }
+  });
+
+  document.getElementById('nlpForm').addEventListener('submit', () => {
+    btn.textContent = '⏳  Analyzing…';
+    btn.disabled = true;
+  });
+
+  ['dragenter','dragover'].forEach(e =>
+    dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('active'); })
+  );
+  ['dragleave','drop'].forEach(e =>
+    dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('active'); })
+  );
+</script>
+
+</body>
+</html>
