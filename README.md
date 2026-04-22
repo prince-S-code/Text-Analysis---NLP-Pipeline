@@ -16,7 +16,6 @@ A modern, full-stack **Natural Language Processing (NLP) pipeline** built with *
 * [📖 Usage](#-usage)
 * [📁 Project Structure](#-project-structure)
 * [🤝 Contributing](#-contributing)
-* [📄 License](#-license)
 * [📞 Contact](#-contact)
 
 ---
