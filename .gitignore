@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+uploads/
+analysis.db
+frontend/node_modules/
+frontend/dist/
+static/app/
+static/wordcloud-*.png

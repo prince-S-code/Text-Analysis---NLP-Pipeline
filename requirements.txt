@@ -1,0 +1,15 @@
+flask
+werkzeug
+nltk
+spacy
+wordcloud
+matplotlib
+scikit-learn
+textblob
+pandas
+numpy
+sqlalchemy
+PyPDF2
+python-docx
+psycopg[binary]
+gunicorn; sys_platform != "win32"
